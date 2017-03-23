@@ -1,0 +1,35 @@
+sudo: required
+services:
+  - docker
+language: python
+
+env:
+  global:
+    - IMAGE="praekeltfoundation/marathon-lb"
+    - REGISTRY_USER=praekeltorgdeploy
+    - secure: "awPRAuGS20cxsIbjTDncEAdh6ZaSAricmw2WKifyrAn1GsyWk+kTZgWUDuvrx2RhpshlJxAHy9ge2h2/cKn6dDGyT5XrpkZ08OXGTgE5O2jiGLYj/2+EJhBlbhMSaKJfWo2EzFvQ1fZx9l09zkqiWz6EM9itUlQosNDCLmNOvYYn1GVArKZRgrMRT8PZSV5D72EaiMMAdD7aQpXi1ziF7aq9hb5FFiJzCk9v4AIs/yGkA3nif/g6uOJTvipYcTZlbcSOz/BLGrdMXNirKpeDkp+9CDKQ05em6COR9hrvovneEFL9SA58O0WhMm1MJBLo8kwOh3M1MNYUTTbJiKkOHkZm1ZS4RNp/dpYdxQDCMkRSyaW8Ik6OhvRFrpBs96UmooDSmSUA8XCfOj1KqIaLTNzkMBY0MEuybsh9IF1swMZLBJ/HTvmJHcjYtFG41uxT6oqbrc10f39EzqI6tXwFVNqzhEN5hCMQHVRTRVKfY/ujgW8seWwx5E0LqM1RDdIlVcmqe/gmfG1dEfCvTQymlI+YkGrYwVRDPgdCWobMEhFNRv9vhC8gj91WMuRrBn1NWl7PzVc8GYpUaXJRNO9vPHKqkgavPpv4uVTbLzb6QyyuE3lyV30C07DoqfrBO3AlOXCnqNFf9GkyRZP2pR6YtzOqC9QpHd9qKL395ldCxJ4="
+
+# Update Docker Engine
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -qy -o Dpkg::Options::="--force-confold" docker-engine
+
+before_script:
+  - version="$(awk '$1 == "FROM" { print substr($2, index($2, ":v") + 2); exit }' Dockerfile)"
+  # Pull the existing image to use as a build cache
+  - docker pull "$IMAGE" || true
+
+script:
+  - docker build --pull --cache-from "$IMAGE" --tag "$IMAGE" .
+
+after_script:
+  - docker images
+
+before_deploy:
+  - pip install docker-ci-deploy==0.2.0
+  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+deploy:
+  provider: script
+  script: dcd --tag-version "$version" --tag-latest "$IMAGE"
+  on:
+    branch: master
