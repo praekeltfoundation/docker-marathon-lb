@@ -1,0 +1,4 @@
+
+frontend marathon_https_in
+  bind *:443 ssl strict-sni {sslCerts}
+  mode http
