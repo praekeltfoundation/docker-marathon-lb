@@ -21,3 +21,6 @@ Docker image for Praekelt.org's custom [marathon-lb](https://github.com/mesosphe
 
 ### [`HAPROXY_FRONTEND_HEAD`](https://github.com/mesosphere/marathon-lb/blob/v1.6.0/Longhelp.md#haproxy_frontend_head)
 **Empty** so as to disable frontends for serviceports.
+
+### [`HAPROXY_FRONTEND_BACKEND_GLUE`](https://github.com/mesosphere/marathon-lb/blob/v1.6.0/Longhelp.md#haproxy_frontend_backend_glue)
+**Empty** together with `HAPROXY_FRONTEND_HEAD`, this removes the frontends for serviceports.
